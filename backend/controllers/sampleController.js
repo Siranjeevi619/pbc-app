@@ -23,7 +23,7 @@ function systematicSample(populationSize, sampleSize) {
 
 function formatSampleNumbers(numbers) {
   const width = String(numbers.length ? Math.max(...numbers) : 0).length || 3;
-  return numbers.map(n => '#' + String(n).padStart(Math.max(width, 3), '0'));
+  return numbers.map((n) => "#" + String(n).padStart(Math.max(width, 3), "0"));
 }
 
 async function generateSamples(req, res) {
@@ -31,9 +31,14 @@ async function generateSamples(req, res) {
   const pop = Number(populationSize);
   const size = Number(sampleSize);
   if (!pop || !size || size > pop) {
-    return res.status(400).json({ message: 'invalid population or sample size' });
+    return res
+      .status(400)
+      .json({ message: "invalid population or sample size" });
   }
-  const numbers = method === 'systematic' ? systematicSample(pop, size) : randomSample(pop, size);
+  const numbers =
+    method === "systematic"
+      ? systematicSample(pop, size)
+      : randomSample(pop, size);
   res.json({ sampleNumbers: formatSampleNumbers(numbers) });
 }
 
