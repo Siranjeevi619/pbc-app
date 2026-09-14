@@ -1,0 +1,113 @@
+const RequestItem = require('../models/RequestItem');
+const StatusLog = require('../models/StatusLog');
+const Contact = require('../models/Contact');
+
+async function listItems(req, res) {
+  const filter = {};
+  if (req.query.engagementId) filter.engagementId = req.query.engagementId;
+  if (req.query.status) filter.status = req.query.status;
+  if (req.query.type) filter.type = req.query.type;
+
+  if (req.user.role === 'client') {
+    filter.contactId = req.user.contactId;
+  } else if (req.query.contactId) {
+    filter.contactId = req.query.contactId;
+  }
+
+  const items = await RequestItem.find(filter).populate('contactId').sort({ dueDate: 1 });
+  res.json({ items });
+}
+
+async function getStats(req, res) {
+  const engagementId = req.query.engagementId;
+  const filter = engagementId ? { engagementId } : {};
+  const items = await RequestItem.find(filter);
+  const now = new Date();
+  const stats = {
+    total: items.length,
+    pending: items.filter(i => i.status === 'pending').length,
+    submitted: items.filter(i => i.status === 'submitted').length,
+    cannotProvide: items.filter(i => i.status === 'cannot_provide').length,
+    overdue: items.filter(i => ['pending', 'rejected'].includes(i.status) && i.dueDate < now).length
+  };
+  res.json({ stats });
+}
+
+async function createItem(req, res) {
+  const { engagementId, contactId, type, name, category, dueDate, sampleRefs } = req.body;
+  if (!engagementId || !contactId || !type || !name || !dueDate) {
+    return res.status(400).json({ message: 'missing required fields' });
+  }
+  const item = await RequestItem.create({
+    engagementId,
+    contactId,
+    type,
+    name,
+    category: category || '',
+    dueDate,
+    sampleRefs: sampleRefs || [],
+    status: 'pending'
+  });
+  await StatusLog.create({ requestItemId: item._id, fromStatus: '', toStatus: 'pending', actor: req.user.id });
+  res.status(201).json({ item });
+}
+
+async function submitItem(req, res) {
+  const item = await RequestItem.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: 'item not found' });
+
+  if (req.user.role === 'client' && String(item.contactId) !== String(req.user.contactId)) {
+    return res.status(403).json({ message: 'forbidden' });
+  }
+
+  const fileRef = req.file ? '/uploads/' + req.file.filename : req.body.fileRef;
+  if (!fileRef) return res.status(400).json({ message: 'file is required' });
+
+  const fromStatus = item.status;
+  item.fileRef = fileRef;
+  item.status = 'submitted';
+  item.reasonCode = null;
+  item.justification = '';
+  await item.save();
+  await StatusLog.create({ requestItemId: item._id, fromStatus, toStatus: 'submitted', actor: req.user.id });
+  res.json({ item });
+}
+
+async function cannotProvideItem(req, res) {
+  const { reasonCode, justification } = req.body;
+  if (!reasonCode || !justification || !justification.trim()) {
+    return res.status(400).json({ message: 'reasonCode and justification are both required' });
+  }
+  const item = await RequestItem.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: 'item not found' });
+
+  if (req.user.role === 'client' && String(item.contactId) !== String(req.user.contactId)) {
+    return res.status(403).json({ message: 'forbidden' });
+  }
+
+  const fromStatus = item.status;
+  item.status = 'cannot_provide';
+  item.reasonCode = reasonCode;
+  item.justification = justification;
+  await item.save();
+  await StatusLog.create({ requestItemId: item._id, fromStatus, toStatus: 'cannot_provide', actor: req.user.id });
+  res.json({ item });
+}
+
+async function reviewItem(req, res) {
+  const { decision, reviewNote } = req.body;
+  if (!['accept', 'reject'].includes(decision)) {
+    return res.status(400).json({ message: 'decision must be accept or reject' });
+  }
+  const item = await RequestItem.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: 'item not found' });
+
+  const fromStatus = item.status;
+  item.status = decision === 'accept' ? 'reviewed' : 'rejected';
+  item.reviewNote = reviewNote || '';
+  await item.save();
+  await StatusLog.create({ requestItemId: item._id, fromStatus, toStatus: item.status, actor: req.user.id });
+  res.json({ item });
+}
+
+module.exports = { listItems, getStats, createItem, submitItem, cannotProvideItem, reviewItem };
