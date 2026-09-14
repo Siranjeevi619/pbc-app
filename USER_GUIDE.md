@@ -20,10 +20,12 @@ http://localhost:3000
    - **Auditor** — day-to-day staff working the engagement.
    - **Engagement Partner** — everything an auditor can do, plus the authority to finalize letters.
    - **Admin** — manages users and schedules.
-   - **Client Contact** — an external client responding to requests. You'll need a **Contact ID** for this — your auditor creates this for you and sends it to you (see "Adding a client contact" below).
+   - **Client Contact** — an external client responding to requests. Register using the **exact same email address** your auditor used when they added you as a contact (see "Adding a client contact" below) — that's how the app links your account to your items.
 4. Submit. You're logged in immediately and land on the screen for your role.
 
 Already have an account? Use **Sign in** instead.
+
+> Registering as a Client Contact and getting "no client contact found for this email"? Your auditor hasn't added you as a contact yet, or added you under a different email — ask them to check.
 
 ---
 
@@ -39,7 +41,7 @@ Everything in the app belongs to an **engagement** — one audit job, for one cl
 
 ### 2. Add client contacts
 
-Inside an engagement, on the **Firm Ledger** screen, click **Add Contact** and enter the client person's name, email and role (e.g. "CFO", "Finance Manager"). Each contact gets an internal **Contact ID** — share this with them so they can register as a client on the portal.
+Inside an engagement, on the **Firm Ledger** screen, click **Add Contact** and enter the client person's name, email and role (e.g. "CFO", "Finance Manager"). Tell them to register on the portal using that exact email address — the app matches new client accounts to contacts by email, so no ID needs to be shared.
 
 ### 3. Request items — Firm Ledger
 

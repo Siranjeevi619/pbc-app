@@ -1,3 +1,5 @@
+const { calculateSampleSize } = require('../utils/samplingMethodology');
+
 function randomSample(populationSize, sampleSize) {
   const pool = [];
   for (let i = 1; i <= populationSize; i++) pool.push(i);
@@ -42,4 +44,13 @@ async function generateSamples(req, res) {
   res.json({ sampleNumbers: formatSampleNumbers(numbers) });
 }
 
-module.exports = { generateSamples };
+async function calculateSize(req, res) {
+  try {
+    const result = calculateSampleSize(req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { generateSamples, calculateSize };

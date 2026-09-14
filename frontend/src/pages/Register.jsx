@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import AuthHero from '../components/AuthHero';
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'auditor', contactId: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'auditor' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -63,10 +63,7 @@ export default function Register() {
             </select>
           </label>
           {form.role === 'client' && (
-            <label className="field">
-              <span>Contact ID</span>
-              <input value={form.contactId} onChange={e => update('contactId', e.target.value)} placeholder="Given by your auditor" required />
-            </label>
+            <div className="field-hint">Use the same email your auditor added you with.</div>
           )}
           <button type="submit" className="auth-submit" disabled={loading}>
             {loading ? 'Creating account…' : 'Create account'}
