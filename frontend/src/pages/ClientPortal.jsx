@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import client from '../api/client';
+import client, { getFileUrl } from '../api/client';
 import Layout from '../components/Layout';
 
 const REASONS = [
@@ -71,6 +71,11 @@ export default function ClientPortal() {
                 <div className="portal-item-due">Due {new Date(item.dueDate).toLocaleDateString()}</div>
               </div>
               <div className="portal-item-actions">
+                {item.fileRef && (
+                  <a href={getFileUrl(item.fileRef)} target="_blank" rel="noopener noreferrer">
+                    <button type="button">Preview</button>
+                  </a>
+                )}
                 <button onClick={() => openUpload(item)}>Upload</button>
                 <button onClick={() => openCannotProvide(item)}>Can't provide</button>
               </div>
@@ -83,7 +88,10 @@ export default function ClientPortal() {
       {mode === 'upload' && activeItem && (
         <div className="modal-backdrop" onClick={closeModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3>Upload — {activeItem.name}</h3>
+            <div className="modal-header">
+              <h3>Upload — {activeItem.name}</h3>
+              <button type="button" className="modal-close" onClick={closeModal} aria-label="Close">&times;</button>
+            </div>
             <form onSubmit={submitUpload}>
               <input type="file" onChange={e => setFile(e.target.files[0])} required />
               <div className="modal-actions">
@@ -98,7 +106,10 @@ export default function ClientPortal() {
       {mode === 'cannot_provide' && activeItem && (
         <div className="modal-backdrop" onClick={closeModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3>Can't provide this item</h3>
+            <div className="modal-header">
+              <h3>Can't provide this item</h3>
+              <button type="button" className="modal-close" onClick={closeModal} aria-label="Close">&times;</button>
+            </div>
             <p>Select a reason and explain — required before this can be submitted.</p>
             <form onSubmit={submitCannotProvide}>
               {REASONS.map(r => (

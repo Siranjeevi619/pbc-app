@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const client = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
+
+export function getFileUrl(fileRef) {
+  return fileRef ? `${UPLOADS_BASE}${fileRef}` : '';
+}
+
+const client = axios.create({ baseURL: API_URL });
 
 client.interceptors.request.use(config => {
   const token = localStorage.getItem('token');

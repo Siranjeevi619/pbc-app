@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const RequestItem = require('../models/RequestItem');
 const StatusLog = require('../models/StatusLog');
 const Contact = require('../models/Contact');
@@ -110,4 +112,40 @@ async function reviewItem(req, res) {
   res.json({ item });
 }
 
-module.exports = { listItems, getStats, createItem, submitItem, cannotProvideItem, reviewItem };
+async function updateItem(req, res) {
+  const { name, category, dueDate, contactId } = req.body;
+  const update = {};
+  if (name !== undefined) update.name = name;
+  if (category !== undefined) update.category = category;
+  if (dueDate !== undefined) update.dueDate = dueDate;
+  if (contactId !== undefined) update.contactId = contactId;
+
+  const item = await RequestItem.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ message: 'item not found' });
+  res.json({ item });
+}
+
+async function deleteItem(req, res) {
+  const item = await RequestItem.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: 'item not found' });
+
+  if (item.fileRef) {
+    const filePath = path.join(__dirname, '..', item.fileRef);
+    fs.unlink(filePath, () => {});
+  }
+
+  await StatusLog.deleteMany({ requestItemId: item._id });
+  await item.deleteOne();
+  res.json({ message: 'item deleted' });
+}
+
+module.exports = {
+  listItems,
+  getStats,
+  createItem,
+  submitItem,
+  cannotProvideItem,
+  reviewItem,
+  updateItem,
+  deleteItem
+};

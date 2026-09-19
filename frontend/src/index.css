@@ -119,11 +119,15 @@ h1, h2, h3 {
 }
 
 .panel {
-  background: var(--color-canvas);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-hairline);
-  padding: 24px;
-  margin-bottom: 20px;
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.panel:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .panel-header {
@@ -171,6 +175,10 @@ button:focus-visible {
 button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #d92d20;
 }
 
 .modal-actions button:first-child,
@@ -226,7 +234,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .risk-result-item {
-  background: var(--color-parchment);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: 14px 24px;
   display: flex;
@@ -267,7 +276,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .stat-card {
-  background: var(--color-parchment);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: 14px 22px;
   min-width: 110px;
@@ -370,6 +380,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .draft-card {
+  background: var(--color-canvas);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: 18px;
@@ -422,6 +433,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: var(--color-canvas);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
   padding: 16px;
@@ -445,19 +457,60 @@ input:focus, select:focus, textarea:focus {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  padding: 24px;
+  z-index: 100;
+  animation: modal-backdrop-in 0.18s ease;
 }
 
 .modal {
   background: var(--color-canvas);
   border-radius: var(--radius-lg);
-  padding: 24px;
-  width: 400px;
-  max-width: 90vw;
+  padding: 28px;
+  width: 440px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--color-divider-soft);
+}
+
+.modal-header h3 {
+  font-size: 19px;
+}
+
+.modal-close {
+  background: var(--color-parchment);
+  color: var(--color-ink-muted-48);
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: var(--color-divider-soft);
+  color: var(--color-ink);
 }
 
 .modal h3 {
@@ -467,20 +520,58 @@ input:focus, select:focus, textarea:focus {
 .modal p {
   color: var(--color-ink-muted-48);
   font-size: 13px;
+  margin: -6px 0 0;
+}
+
+.modal-header + p {
+  margin-top: -8px;
 }
 
 .modal form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.modal form label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-ink-muted-48);
+}
+
+.modal input,
+.modal select,
+.modal textarea {
+  padding: 10px 13px;
+  font-size: 14px;
+}
+
+.modal textarea {
+  min-height: 90px;
+  resize: vertical;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 8px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-divider-soft);
+}
+
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .radio-row {
