@@ -508,10 +508,14 @@ input:focus, select:focus, textarea:focus {
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 .portal-item:hover { transform: translateY(-2px); border-color: rgba(0, 102, 204, .26); box-shadow: 0 12px 28px rgba(29,29,31,.07); }
+.portal-item-actions { flex: 0 0 auto; align-items: center; flex-wrap: wrap; }
 .portal-item-main { display: flex; align-items: center; gap: 14px; }
 .file-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: var(--color-primary); background: rgba(0, 102, 204, .09); font-size: 20px; }
-.portal-item-meta { display: flex; gap: 12px; margin-top: 5px; color: var(--color-ink-muted-48); font-size: 12px; }
-.portal-item-meta span + span { padding-left: 12px; border-left: 1px solid var(--color-hairline); }
+.portal-item-main > div:last-child { min-width: 0; }
+.portal-item-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin-top: 5px; color: var(--color-ink-muted-48); font-size: 12px; }
+.portal-item-meta > span { display: inline-flex; align-items: center; min-width: 0; white-space: nowrap; }
+.portal-item-meta > span + span { margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--color-hairline); }
+.portal-item-meta > span:first-child { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .count-badge { padding: 7px 12px; border-radius: var(--radius-pill); background: var(--color-parchment); color: var(--color-ink-muted-48); font-size: 12px; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 50px 20px; color: var(--color-ink-muted-48); text-align: center; }
 .empty-state strong { color: var(--color-ink); font-size: 17px; }
@@ -841,6 +845,7 @@ input:focus, select:focus, textarea:focus {
   .portal-item { align-items: flex-start; flex-direction: column; gap: 18px; }
   .portal-item-actions { width: 100%; flex-wrap: wrap; }
   .portal-item-actions button { flex: 1; }
+  .portal-item-meta > span:first-child { max-width: min(220px, 42vw); }
   .preview-header, .preview-footer { align-items: flex-start; flex-direction: column; }
   .preview-footer .modal-actions { width: 100%; }
   .preview-footer .modal-actions > * { flex: 1; justify-content: center; text-align: center; }
