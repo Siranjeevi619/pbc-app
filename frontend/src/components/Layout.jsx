@@ -17,7 +17,7 @@ export default function Layout({ children }) {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">PBC Request Register</div>
+        <div className="brand"><span className="brand-mark">P</span><span>PBC <em>Request Register</em></span></div>
         <nav className="tabbar">
           {tabs.map(t => (
             <NavLink key={t.to} to={t.to} className={({ isActive }) => 'tab' + (isActive ? ' active' : '')}>
@@ -27,8 +27,9 @@ export default function Layout({ children }) {
           {engagementId && <NavLink to="/engagements" className="tab">All Engagements</NavLink>}
         </nav>
         <div className="userbar">
-          <span>{user?.name} ({user?.role})</span>
-          <button onClick={logout}>Logout</button>
+          <div className="user-avatar">{user?.name?.charAt(0)?.toUpperCase()}</div>
+          <span className="user-name">{user?.name}</span>
+          <button onClick={logout}>Log out</button>
         </div>
       </header>
       <main className="content">{children}</main>

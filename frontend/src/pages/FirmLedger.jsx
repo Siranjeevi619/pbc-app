@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import client, { getFileUrl } from '../api/client';
+import client from '../api/client';
 import Layout from '../components/Layout';
 import ConfirmModal from '../components/ConfirmModal';
+import FilePreviewModal from '../components/FilePreviewModal';
 import { useAuth } from '../context/AuthContext';
 
 const STATUS_LABELS = {
@@ -37,6 +38,7 @@ export default function FirmLedger() {
   const [deleteItemTarget, setDeleteItemTarget] = useState(null);
   const [deleteContactTarget, setDeleteContactTarget] = useState(null);
   const [deleteContactError, setDeleteContactError] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
 
   function loadItems() {
     client.get('/items', { params: { engagementId } }).then(res => setItems(res.data.items));
@@ -160,9 +162,25 @@ export default function FirmLedger() {
 
   return (
     <Layout>
-      <div className="panel">
+      <div className="page-hero compact-hero">
+        <div>
+          <span className="eyebrow">Engagement control center</span>
+          <h1>Firm Ledger</h1>
+          <p>One calm view of every request, response, and follow-up across this engagement.</p>
+        </div>
+        <div className="hero-metric">
+          <span>Live register</span>
+          <strong>{stats?.total ?? '—'}</strong>
+          <small>total requests</small>
+        </div>
+      </div>
+
+      <div className="panel ledger-panel">
         <div className="panel-header">
-          <h2>Firm Ledger</h2>
+          <div>
+            <span className="eyebrow">Request register</span>
+            <h2>All items</h2>
+          </div>
           <div className="panel-actions">
             <button onClick={() => setShowContacts(v => !v)}>{showContacts ? 'Hide Contacts' : 'Manage Contacts'}</button>
             <button onClick={openCreateContact}>Add Contact</button>
@@ -241,9 +259,7 @@ export default function FirmLedger() {
                 <td><span className={'status-pill status-' + item.status}>{STATUS_LABELS[item.status]}</span></td>
                 <td>
                   {item.fileRef && (
-                    <a href={getFileUrl(item.fileRef)} target="_blank" rel="noopener noreferrer">
-                      <button type="button">Preview</button>
-                    </a>
+                    <button type="button" className="button-secondary" onClick={() => setPreviewItem(item)}>Preview</button>
                   )}
                   {item.status === 'submitted' && ['auditor', 'partner', 'admin'].includes(user.role) && (
                     <>
@@ -324,6 +340,14 @@ export default function FirmLedger() {
           message={`Delete request "${deleteItemTarget.name}"? This cannot be undone.`}
           onCancel={() => setDeleteItemTarget(null)}
           onConfirm={confirmDeleteItem}
+        />
+      )}
+
+      {previewItem && (
+        <FilePreviewModal
+          fileRef={previewItem.fileRef}
+          title={previewItem.name}
+          onClose={() => setPreviewItem(null)}
         />
       )}
     </Layout>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import client, { getFileUrl } from '../api/client';
+import client from '../api/client';
 import Layout from '../components/Layout';
+import FilePreviewModal from '../components/FilePreviewModal';
 
 const REASONS = [
   { value: 'company_policy', label: 'Company policy restricts sharing' },
@@ -16,9 +17,10 @@ export default function ClientPortal() {
   const [file, setFile] = useState(null);
   const [reasonCode, setReasonCode] = useState('');
   const [justification, setJustification] = useState('');
+  const [previewItem, setPreviewItem] = useState(null);
 
   function load() {
-    client.get('/items').then(res => setItems(res.data.items.filter(i => ['pending', 'rejected'].includes(i.status))));
+    client.get('/items').then(res => setItems(res.data.items));
   }
 
   useEffect(load, []);
@@ -61,29 +63,65 @@ export default function ClientPortal() {
 
   return (
     <Layout>
-      <div className="panel">
-        <h2>Client Portal</h2>
+      <div className="page-hero">
+        <div>
+          <span className="eyebrow">Your secure workspace</span>
+          <h1>Keep your requests moving.</h1>
+          <p>Upload the documents your audit team needs, review what you have already shared, and stay ahead of every due date.</p>
+        </div>
+        <div className="hero-orb" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+
+      <div className="panel portal-panel">
+        <div className="panel-header">
+          <div>
+            <span className="eyebrow">Action center</span>
+            <h2>Outstanding requests</h2>
+          </div>
+          <span className="count-badge">{items.length} {items.length === 1 ? 'request' : 'requests'}</span>
+        </div>
         <div className="portal-items">
           {items.map(item => (
             <div key={item._id} className="portal-item">
-              <div>
+              <div className="portal-item-main">
+                <div className="file-icon" aria-hidden="true">↗</div>
+                <div>
                 <div className="portal-item-name">{item.name}</div>
-                <div className="portal-item-due">Due {new Date(item.dueDate).toLocaleDateString()}</div>
+                <div className="portal-item-meta">
+                  <span>{item.category || 'Document request'}</span>
+                  <span>Due {new Date(item.dueDate).toLocaleDateString()}</span>
+                  <span className={'status-pill status-' + item.status}>{item.status.replace('_', ' ')}</span>
+                </div>
+                </div>
               </div>
               <div className="portal-item-actions">
                 {item.fileRef && (
-                  <a href={getFileUrl(item.fileRef)} target="_blank" rel="noopener noreferrer">
-                    <button type="button">Preview</button>
-                  </a>
+                  <button type="button" className="button-secondary" onClick={() => setPreviewItem(item)}>Preview file</button>
                 )}
-                <button onClick={() => openUpload(item)}>Upload</button>
-                <button onClick={() => openCannotProvide(item)}>Can't provide</button>
+                {['pending', 'rejected'].includes(item.status) && (
+                  <>
+                    <button onClick={() => openUpload(item)}>Upload</button>
+                    <button onClick={() => openCannotProvide(item)}>Can't provide</button>
+                  </>
+                )}
               </div>
             </div>
           ))}
-          {items.length === 0 && <div>No outstanding items.</div>}
+          {items.length === 0 && <div className="empty-state"><strong>You're all caught up.</strong><span>No outstanding document requests right now.</span></div>}
         </div>
       </div>
+
+      {previewItem && (
+        <FilePreviewModal
+          fileRef={previewItem.fileRef}
+          title={previewItem.name}
+          onClose={() => setPreviewItem(null)}
+        />
+      )}
 
       {mode === 'upload' && activeItem && (
         <div className="modal-backdrop" onClick={closeModal}>

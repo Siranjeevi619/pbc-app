@@ -64,10 +64,10 @@ export default function AutomationCenter() {
           <button type="submit">Save Schedule</button>
         </form>
 
-        <div className="filter-chips">
-          <button className={'chip' + (tab === 'client_eod' ? ' active' : '')} onClick={() => setTab('client_eod')}>Client EOD reminders</button>
-          <button className={'chip' + (tab === 'internal_digest' ? ' active' : '')} onClick={() => setTab('internal_digest')}>Internal daily digest</button>
-          <button className={'chip' + (tab === 'send_log' ? ' active' : '')} onClick={() => setTab('send_log')}>Send log</button>
+        <div className="filter-chips automation-tabs" role="tablist" aria-label="Automation views">
+          <button type="button" role="tab" aria-selected={tab === 'client_eod'} className={'chip' + (tab === 'client_eod' ? ' active' : '')} onClick={() => setTab('client_eod')}>Client EOD reminders</button>
+          <button type="button" role="tab" aria-selected={tab === 'internal_digest'} className={'chip' + (tab === 'internal_digest' ? ' active' : '')} onClick={() => setTab('internal_digest')}>Internal daily digest</button>
+          <button type="button" role="tab" aria-selected={tab === 'send_log'} className={'chip' + (tab === 'send_log' ? ' active' : '')} onClick={() => setTab('send_log')}>Send log</button>
         </div>
 
         {tab !== 'send_log' && drafts.map(d => (
