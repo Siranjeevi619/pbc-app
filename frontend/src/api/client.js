@@ -7,6 +7,10 @@ export function getFileUrl(fileRef) {
   return fileRef ? `${UPLOADS_BASE}${fileRef}` : '';
 }
 
+export function isStoredFileRef(fileRef) {
+  return Boolean(fileRef && fileRef.startsWith('/api/items/'));
+}
+
 const client = axios.create({ baseURL: API_URL });
 
 client.interceptors.request.use(config => {

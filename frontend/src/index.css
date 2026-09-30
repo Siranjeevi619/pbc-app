@@ -576,6 +576,8 @@ input:focus, select:focus, textarea:focus {
 .preview-stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.12); }
 .preview-stage video { width: 100%; max-height: 100%; border-radius: 10px; }
 .preview-stage audio { width: min(480px, 100%); }
+.preview-loading, .preview-error { color: var(--color-ink-muted-48); font-size: 14px; }
+.preview-error { color: #b3261e; }
 .preview-footer { border-top: 1px solid var(--color-divider-soft); color: var(--color-ink-muted-48); font-size: 12px; }
 
 .modal-header {

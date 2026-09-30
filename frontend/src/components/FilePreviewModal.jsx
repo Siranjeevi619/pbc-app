@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { getFileUrl } from '../api/client';
+import { useEffect, useState } from 'react';
+import client, { getFileUrl, isStoredFileRef } from '../api/client';
 
 function getFileKind(fileRef = '') {
   const extension = fileRef.split('?')[0].split('.').pop()?.toLowerCase();
@@ -10,7 +10,10 @@ function getFileKind(fileRef = '') {
   return 'document';
 }
 
-export default function FilePreviewModal({ fileRef, title, onClose }) {
+export default function FilePreviewModal({ fileRef, fileName, fileContentType, title, onClose }) {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewError, setPreviewError] = useState('');
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === 'Escape') onClose();
@@ -20,11 +23,32 @@ export default function FilePreviewModal({ fileRef, title, onClose }) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  useEffect(() => {
+    let objectUrl = '';
+    setPreviewError('');
+
+    if (!isStoredFileRef(fileRef)) {
+      setPreviewUrl(getFileUrl(fileRef));
+      return undefined;
+    }
+
+    client.get(fileRef.replace(/^\/api/, ''), { responseType: 'blob' })
+      .then(response => {
+        objectUrl = URL.createObjectURL(response.data);
+        setPreviewUrl(objectUrl);
+      })
+      .catch(() => setPreviewError('This file could not be loaded.'));
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [fileRef]);
+
   if (!fileRef) return null;
 
-  const url = getFileUrl(fileRef);
-  const kind = getFileKind(fileRef);
-  const fileName = decodeURIComponent(fileRef.split('/').pop() || 'Uploaded file');
+  const url = previewUrl;
+  const kind = getFileKind(fileName || fileContentType || fileRef);
+  const displayName = fileName || decodeURIComponent(fileRef.split('/').pop() || 'Uploaded file');
 
   return (
     <div className="modal-backdrop preview-backdrop" onClick={onClose}>
@@ -33,16 +57,18 @@ export default function FilePreviewModal({ fileRef, title, onClose }) {
           <div>
             <span className="eyebrow">Uploaded file</span>
             <h3>{title}</h3>
-            <p>{fileName}</p>
+            <p>{displayName}</p>
           </div>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Close preview">&times;</button>
         </header>
 
         <div className={`preview-stage preview-${kind}`}>
-          {kind === 'image' && <img src={url} alt={title} />}
-          {kind === 'video' && <video src={url} controls autoPlay />}
-          {kind === 'audio' && <audio src={url} controls />}
-          {(kind === 'pdf' || kind === 'document') && (
+          {previewError && <div className="preview-error">{previewError}</div>}
+          {!previewError && !url && <div className="preview-loading">Loading preview…</div>}
+          {!previewError && url && kind === 'image' && <img src={url} alt={title} />}
+          {!previewError && url && kind === 'video' && <video src={url} controls autoPlay />}
+          {!previewError && url && kind === 'audio' && <audio src={url} controls />}
+          {!previewError && url && (kind === 'pdf' || kind === 'document') && (
             <iframe src={url} title={`Preview of ${title}`} />
           )}
         </div>

@@ -118,6 +118,8 @@ export default function ClientPortal() {
       {previewItem && (
         <FilePreviewModal
           fileRef={previewItem.fileRef}
+          fileName={previewItem.fileName}
+          fileContentType={previewItem.fileContentType}
           title={previewItem.name}
           onClose={() => setPreviewItem(null)}
         />

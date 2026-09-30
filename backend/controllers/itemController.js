@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
+const { promisify } = require('util');
 const RequestItem = require('../models/RequestItem');
 const StatusLog = require('../models/StatusLog');
 const Contact = require('../models/Contact');
+const gzip = promisify(zlib.gzip);
+const gunzip = promisify(zlib.gunzip);
 
 async function listItems(req, res) {
   const filter = {};
@@ -16,7 +20,7 @@ async function listItems(req, res) {
     filter.contactId = req.query.contactId;
   }
 
-  const items = await RequestItem.find(filter).populate('contactId').sort({ dueDate: 1 });
+  const items = await RequestItem.find(filter).select('-fileData').populate('contactId').sort({ dueDate: 1 });
   res.json({ items });
 }
 
@@ -62,17 +66,50 @@ async function submitItem(req, res) {
     return res.status(403).json({ message: 'forbidden' });
   }
 
-  const fileRef = req.file ? '/uploads/' + req.file.filename : req.body.fileRef;
+  const fileRef = req.file ? `/api/items/${item._id}/file` : req.body.fileRef;
   if (!fileRef) return res.status(400).json({ message: 'file is required' });
 
   const fromStatus = item.status;
   item.fileRef = fileRef;
+  if (req.file) {
+    item.fileData = await gzip(req.file.buffer);
+    item.fileName = req.file.originalname;
+    item.fileContentType = req.file.mimetype || 'application/octet-stream';
+  }
   item.status = 'submitted';
   item.reasonCode = null;
   item.justification = '';
   await item.save();
   await StatusLog.create({ requestItemId: item._id, fromStatus, toStatus: 'submitted', actor: req.user.id });
   res.json({ item });
+}
+
+async function getItemFile(req, res) {
+  const item = await RequestItem.findById(req.params.id).select('+fileData');
+  if (!item) return res.status(404).json({ message: 'item not found' });
+
+  if (req.user.role === 'client' && String(item.contactId) !== String(req.user.contactId)) {
+    return res.status(403).json({ message: 'forbidden' });
+  }
+
+  if (item.fileData && item.fileData.length) {
+    const file = await gunzip(item.fileData);
+    res.set({
+      'Content-Type': item.fileContentType || 'application/octet-stream',
+      'Content-Length': file.length,
+      'Content-Disposition': `inline; filename="${encodeURIComponent(item.fileName || 'uploaded-file')}"`
+    });
+    return res.send(file);
+  }
+
+  if (item.fileRef && item.fileRef.startsWith('/uploads/')) {
+    const filePath = path.join(__dirname, '..', item.fileRef);
+    return res.sendFile(filePath, err => {
+      if (err && !res.headersSent) res.status(err.statusCode || 404).json({ message: 'file not found' });
+    });
+  }
+
+  return res.status(404).json({ message: 'file not found' });
 }
 
 async function cannotProvideItem(req, res) {
@@ -129,7 +166,7 @@ async function deleteItem(req, res) {
   const item = await RequestItem.findById(req.params.id);
   if (!item) return res.status(404).json({ message: 'item not found' });
 
-  if (item.fileRef) {
+  if (item.fileRef && item.fileRef.startsWith('/uploads/')) {
     const filePath = path.join(__dirname, '..', item.fileRef);
     fs.unlink(filePath, () => {});
   }
@@ -144,6 +181,7 @@ module.exports = {
   getStats,
   createItem,
   submitItem,
+  getItemFile,
   cannotProvideItem,
   reviewItem,
   updateItem,

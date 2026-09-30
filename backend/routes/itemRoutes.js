@@ -7,6 +7,7 @@ const {
   getStats,
   createItem,
   submitItem,
+  getItemFile,
   cannotProvideItem,
   reviewItem,
   updateItem,
@@ -16,6 +17,7 @@ const {
 router.use(requireAuth);
 router.get('/', listItems);
 router.get('/stats', getStats);
+router.get('/:id/file', getItemFile);
 router.post('/', requireRole('auditor', 'partner', 'admin'), createItem);
 router.put('/:id', requireRole('auditor', 'partner', 'admin'), updateItem);
 router.delete('/:id', requireRole('auditor', 'partner', 'admin'), deleteItem);

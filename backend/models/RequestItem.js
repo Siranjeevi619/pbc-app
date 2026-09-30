@@ -13,6 +13,9 @@ const requestItemSchema = new mongoose.Schema({
     default: 'pending'
   },
   fileRef: { type: String, default: '' },
+  fileName: { type: String, default: '' },
+  fileContentType: { type: String, default: '' },
+  fileData: { type: Buffer, select: false },
   sampleRefs: [{ type: String }],
   reasonCode: {
     type: String,
